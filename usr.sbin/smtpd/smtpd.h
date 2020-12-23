@@ -1346,6 +1346,11 @@ size_t	crypto_encrypt_buffer(const char *, size_t, char *, size_t);
 size_t	crypto_decrypt_buffer(const char *, size_t, char *, size_t);
 
 
+/* dispatcher.c */
+int dispatcher(void);
+void dispatcher_imsg(struct mproc *, struct imsg *);
+
+
 /* dns.c */
 void dns_imsg(struct mproc *, struct imsg *);
 
@@ -1607,11 +1612,6 @@ int scheduler(void);
 /* scheduler_bakend.c */
 struct scheduler_backend *scheduler_backend_lookup(const char *);
 void scheduler_info(struct scheduler_info *, struct envelope *);
-
-
-/* pony.c */
-int dispatcher(void);
-void dispatcher_imsg(struct mproc *, struct imsg *);
 
 
 /* resolver.c */
