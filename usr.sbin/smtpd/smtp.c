@@ -23,7 +23,9 @@
 #include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/tree.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 
 #include <err.h>
 #include <errno.h>
@@ -137,6 +139,40 @@ smtp_configure(void)
 }
 
 static void
+smtp_create_unix_socket(struct listener *l)
+{
+	struct sockaddr_un	s_un;
+	mode_t			old_umask;
+
+	memset(&s_un, 0, sizeof(s_un));
+	s_un.sun_family = AF_UNIX;
+	if (strlcpy(s_un.sun_path, l->socket_path,
+	    sizeof(s_un.sun_path)) >= sizeof(s_un.sun_path))
+		fatal("control: socket name too long");
+
+	if (connect(l->fd, (struct sockaddr *)&s_un, sizeof(s_un)) == 0)
+		fatalx("control socket already listening");
+
+	if (unlink(l->socket_path) == -1)
+		if (errno != ENOENT)
+			fatal("control: cannot unlink socket");
+
+	old_umask = umask(S_IXUSR|S_IXGRP|S_IWOTH|S_IROTH|S_IXOTH);
+	if (bind(l->fd, (struct sockaddr *)&s_un, sizeof(s_un)) == -1) {
+		(void)umask(old_umask);
+		fatal("control: bind");
+	}
+	(void)umask(old_umask);
+
+	if (chmod(l->socket_path,
+		S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH) == -1) {
+		(void)unlink(l->socket_path);
+		fatal("control: chmod");
+	}
+}
+
+
+static void
 smtp_setup_listeners(void)
 {
 	struct listener	       *l;
@@ -150,6 +186,7 @@ smtp_setup_listeners(void)
 			}
 			fatal("smtpd: socket");
 		}
+
 		opt = 1;
 #ifdef SO_REUSEADDR
 		if (setsockopt(l->fd, SOL_SOCKET, SO_REUSEADDR, &opt,
@@ -160,6 +197,12 @@ smtp_setup_listeners(void)
 			sizeof(opt)) < 0)
 			fatal("smtpd: setsockopt");
 #endif
+
+		if (l->ss.ss_family == AF_UNIX) {
+			smtp_create_unix_socket(l);
+			continue;
+		}
+
 #ifdef IPV6_V6ONLY
 		/*
 		 * If using IPv6, bind only to IPv6 if possible.
