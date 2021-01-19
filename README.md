@@ -39,11 +39,11 @@ which you are encouraged to contribute to.
 Cheers!
 
 
-# How to build, configure and use Portable OpenSMTPD
+# How to build, configure and use nooSMTPD
 
 ## Dependencies
 
-Portable OpenSMTPD relies on:
+nooSMTPD relies on:
   * autoconf (http://www.gnu.org/software/autoconf/)
   * automake (http://www.gnu.org/software/automake/)
   * bison (http://www.gnu.org/software/bison/)
@@ -54,14 +54,14 @@ Portable OpenSMTPD relies on:
     or OpenSSL (https://www.openssl.org/)
 
 
-By default OpenSMTPD expects latest versions of all dependencies unless noted otherwise.
+By default nooSMTPD expects latest versions of all dependencies unless noted otherwise.
 
-Note that some distributions have different packages for a same library, you should always use the `-dev` or `-devel` package (for example, `libevent-dev` or `libevent-devel`) if you're going to build OpenSMTPD yourself.
+Note that some distributions have different packages for a same library, you should always use the `-dev` or `-devel` package (for example, `libevent-dev` or `libevent-devel`) if you're going to build nooSMTPD yourself.
 
 
 ## Get the source
 
-    git clone git://github.com/OpenSMTPD/OpenSMTPD.git opensmtpd
+    git clone git://github.com/poolpOrg/nooSMTPD.git noosmtpd
 
 
 ## Build
@@ -95,7 +95,7 @@ need to install a more recent version from, e.g., MacPorts.
 
 ## Setup historical interface
 
-OpenSMTPD provides a single utility `smtpctl` to control the daemon and
+nooSMTPD provides a single utility `smtpctl` to control the daemon and
 the local submission subsystem.
 
 To accomodate systems that require historical interfaces such as `sendmail`,
@@ -122,7 +122,7 @@ setting the appropriate symbolic links:
     ln -s /usr/sbin/smtpctl newaliases
 
 
-The OpenSMTPD project leaves it up to the package maintainers to setup the
+The nooSMTPD project leaves it up to the package maintainers to setup the
 links in their packages as it is very hard for us to accomodate all systems
 with the prefered method in a clean way.
 
@@ -133,9 +133,9 @@ Please have a look at the complete format description of smtpd.conf
 configuration file (https://man.openbsd.org/smtpd.conf)
 
 
-## Add OpenSMTPD users
+## Add nooSMTPD users
 
-To operate, OpenSMTPD requires at least one user, by default `_smtpd`; and
+To operate, nooSMTPD requires at least one user, by default `_smtpd`; and
 preferably two users, by default `_smtpd` and `_smtpq`.
 
 Using two users instead of one will increase security by a large factor
