@@ -1017,7 +1017,7 @@ setup_proc(void)
 static struct mproc *
 setup_peer(enum smtp_proc_type proc, pid_t pid, int sock)
 {
-	struct mproc *p, **pp;
+	struct mproc *p, **pp = NULL;
 
 	log_debug("setup_peer: %s -> %s[%u] fd=%d", proc_title(smtpd_process),
 	    proc_title(proc), pid, sock);
@@ -1044,9 +1044,15 @@ setup_peer(enum smtp_proc_type proc, pid_t pid, int sock)
 	case PROC_CA:
 		pp = &p_ca;
 		break;
-	default:
-		fatalx("unknown peer");
+	case PROC_PARENT:
+	case PROC_PROCESSOR:
+	case PROC_CLIENT:
+		/* peers that don't need setup */
+		break;
 	}
+
+	if (pp == NULL)
+		fatalx("unknown peer");
 
 	if (*pp)
 		fatalx("peer already set");
