@@ -139,7 +139,7 @@ static struct listen_opts {
 	int		family;
 	in_port_t	port;
 	uint16_t	ssl;
-	char		   *socket_path;
+	char		*socket_path;
 	char	       *filtername;
 	char	       *pki;
 	char	       *ca;

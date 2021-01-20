@@ -186,7 +186,6 @@ smtp_setup_listeners(void)
 			}
 			fatal("smtpd: socket");
 		}
-
 		opt = 1;
 #ifdef SO_REUSEADDR
 		if (setsockopt(l->fd, SOL_SOCKET, SO_REUSEADDR, &opt,
@@ -232,7 +231,7 @@ smtp_setup_events(void)
 			log_debug("debug: smtp: listen on %s port %d flags 0x%01x"
 			    " pki \"%s\""
 			    " ca \"%s\"", ss_to_text(&l->ss), ntohs(l->port),
-		    	l->flags, l->pki_name, l->ca_name);
+				l->flags, l->pki_name, l->ca_name);
 		else
 			log_debug("debug: smtp: listen on unix://%s flags 0x%01x",
 				l->socket_path, l->flags);
