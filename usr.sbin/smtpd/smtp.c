@@ -148,26 +148,26 @@ smtp_create_unix_socket(struct listener *l)
 	s_un.sun_family = AF_UNIX;
 	if (strlcpy(s_un.sun_path, l->socket_path,
 	    sizeof(s_un.sun_path)) >= sizeof(s_un.sun_path))
-		fatal("control: socket name too long");
+		fatal("smtp: socket name too long");
 
 	if (connect(l->fd, (struct sockaddr *)&s_un, sizeof(s_un)) == 0)
-		fatalx("control socket already listening");
+		fatalx("smtp socket already listening");
 
 	if (unlink(l->socket_path) == -1)
 		if (errno != ENOENT)
-			fatal("control: cannot unlink socket");
+			fatal("smtp: cannot unlink socket");
 
 	old_umask = umask(S_IXUSR|S_IXGRP|S_IWOTH|S_IROTH|S_IXOTH);
 	if (bind(l->fd, (struct sockaddr *)&s_un, sizeof(s_un)) == -1) {
 		(void)umask(old_umask);
-		fatal("control: bind");
+		fatal("smtp: bind");
 	}
 	(void)umask(old_umask);
 
 	if (chmod(l->socket_path,
 		S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH) == -1) {
 		(void)unlink(l->socket_path);
-		fatal("control: chmod");
+		fatal("smtp: chmod");
 	}
 }
 
