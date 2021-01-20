@@ -1375,7 +1375,7 @@ report_smtp_broadcast(uint64_t reqid, const char *direction, struct timeval *tv,
     const char *format, ...)
 {
 	va_list		ap;
-	struct dict	*d;
+	struct dict	*d = NULL;
 	struct reporters	*tailq;
 	struct reporter_proc	*rp;
 
@@ -1385,7 +1385,7 @@ report_smtp_broadcast(uint64_t reqid, const char *direction, struct timeval *tv,
 	else if (strcmp("smtp-out", direction) == 0)
 		d = &report_smtp_out;
 
-	else
+	if (d == NULL)
 		fatalx("unexpected direction: %s", direction);
 
 	tailq = dict_xget(d, event);

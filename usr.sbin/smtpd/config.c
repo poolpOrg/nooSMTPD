@@ -317,7 +317,7 @@ config_process(enum smtp_proc_type proc)
 void
 config_peer(enum smtp_proc_type proc)
 {
-	struct mproc	*p;
+	struct mproc	*p = NULL;
 
 	if (proc == smtpd_process)
 		fatal("config_peers: cannot peer with oneself");
@@ -336,7 +336,8 @@ config_peer(enum smtp_proc_type proc)
 		p = p_dispatcher;
 	else if (proc == PROC_CA)
 		p = p_ca;
-	else
+
+	if (p == NULL)
 		fatalx("bad peer");
 
 	mproc_enable(p);
