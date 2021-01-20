@@ -66,7 +66,7 @@ Note that some distributions have different packages for a same library, you sho
 
 ## Build
 
-    cd opensmtpd*
+    cd noosmtpd
     ./bootstrap  # Only if you build from git sources
     ./configure
     make
