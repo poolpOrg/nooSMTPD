@@ -159,7 +159,6 @@ static void	create_if_listener(struct listen_opts *);
 static void	config_listener(struct listener *, struct listen_opts *);
 static int	host_v4(struct listen_opts *);
 static int	host_v6(struct listen_opts *);
-static int	host_dns(struct listen_opts *);
 static int	interface(struct listen_opts *);
 
 int		 delaytonum(char *);
@@ -3280,8 +3279,6 @@ create_if_listener(struct listen_opts *lo)
 		return;
 	if (host_v6(lo))
 		return;
-	if (host_dns(lo))
-		return;
 
 	errx(1, "invalid virtual ip or interface: %s", lo->ifx);
 }
@@ -3411,66 +3408,6 @@ host_v6(struct listen_opts *lo)
 	config_listener(h,  lo);
 
 	return (1);
-}
-
-static int
-host_dns(struct listen_opts *lo)
-{
-	struct addrinfo		 hints, *res0, *res;
-	int			 error, cnt = 0;
-	struct sockaddr_in	*sain;
-	struct sockaddr_in6	*sin6;
-	struct listener		*h;
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = lo->family;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_ADDRCONFIG;
-	error = getaddrinfo(lo->ifx, NULL, &hints, &res0);
-	if (error == EAI_AGAIN || error == EAI_NODATA || error == EAI_NONAME)
-		return (0);
-	if (error) {
-		log_warnx("warn: host_dns: could not parse \"%s\": %s", lo->ifx,
-		    gai_strerror(error));
-		return (-1);
-	}
-
-	for (res = res0; res; res = res->ai_next) {
-		if (res->ai_family != AF_INET &&
-		    res->ai_family != AF_INET6)
-			continue;
-		h = xcalloc(1, sizeof(*h));
-
-		h->ss.ss_family = res->ai_family;
-		if (res->ai_family == AF_INET) {
-			sain = (struct sockaddr_in *)&h->ss;
-#ifdef HAVE_STRUCT_SOCKADDR_IN_SIN_LEN
-			sain->sin_len = sizeof(struct sockaddr_in);
-#endif
-			sain->sin_addr.s_addr = ((struct sockaddr_in *)
-			    res->ai_addr)->sin_addr.s_addr;
-			sain->sin_port = lo->port;
-			if (sain->sin_addr.s_addr == htonl(INADDR_LOOPBACK))
-				h->local = 1;
-		} else {
-			sin6 = (struct sockaddr_in6 *)&h->ss;
-#ifdef HAVE_STRUCT_SOCKADDR_IN6_SIN6_LEN
-			sin6->sin6_len = sizeof(struct sockaddr_in6);
-#endif
-			memcpy(&sin6->sin6_addr, &((struct sockaddr_in6 *)
-			    res->ai_addr)->sin6_addr, sizeof(struct in6_addr));
-			sin6->sin6_port = lo->port;
-			if (IN6_IS_ADDR_LOOPBACK(&sin6->sin6_addr))
-				h->local = 1;
-		}
-
-		config_listener(h, lo);
-
-		cnt++;
-	}
-
-	freeaddrinfo(res0);
-	return (cnt);
 }
 
 static int
