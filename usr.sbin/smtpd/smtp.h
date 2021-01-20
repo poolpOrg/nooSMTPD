@@ -39,8 +39,9 @@ struct smtp_params {
 	size_t			 obufmax;	/* max output buffer size */
 
 	/* Connection settings */
-	const struct sockaddr	*dst;		/* address to connect to */
-	const struct sockaddr	*src;		/* address to bind to */
+	struct sockaddr_un	unix;		/* UNIX socket path */
+	struct sockaddr		*dst;		/* address to connect to */
+	struct sockaddr		*src;		/* address to bind to */
 	int			 timeout;	/* timeout in seconds */
 
 	/* TLS options */

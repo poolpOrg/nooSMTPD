@@ -20,6 +20,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 
 #include <event.h>
 #include <limits.h>
@@ -208,6 +209,15 @@ parse_server(char *server)
 	port = NULL;
 	scheme = server;
 
+	if (*server == '/') {
+		memset(&params.unix, 0, sizeof(params.unix));
+		params.unix.sun_family = AF_UNIX;
+		if (strlcpy(params.unix.sun_path, server, sizeof(params.unix.sun_path))
+			>= sizeof(params.unix.sun_path))
+			fatalx("socket path too long");
+		return;
+	}
+
 	p = strstr(server, "://");
 	if (p) {
 		*p = '\0';
@@ -226,7 +236,14 @@ parse_server(char *server)
 		host = server;
 	}
 
-	if (host[0] == '[') {
+	if (host[0] == '/') {
+		memset(&params.unix, 0, sizeof(params.unix));
+		params.unix.sun_family = AF_UNIX;
+		if (strlcpy(params.unix.sun_path, host, sizeof(params.unix.sun_path))
+			>= sizeof(params.unix.sun_path))
+			fatalx("socket path too long");
+	}
+	else if (host[0] == '[') {
 		/* IPV6 address? */
 		p = strchr(host, ']');
 		if (p) {
@@ -284,6 +301,9 @@ parse_server(char *server)
 	}
 	else
 		fatalx("invalid url scheme %s", scheme);
+
+	if (params.unix.sun_path[0] != '\0')
+		return;
 
 	if (port == NULL)
 		port = "smtp";
@@ -343,15 +363,24 @@ resume(void)
 		return;
 	}
 
-	if (ai == NULL)
-		fatalx("no more host");
+	if (params.unix.sun_path[0] == '\0') {
+		if (ai == NULL)
+			fatalx("no more host");
 
-	getnameinfo(ai->ai_addr, SA_LEN(ai->ai_addr),
-	    host, sizeof(host), serv, sizeof(serv),
-	    NI_NUMERICHOST | NI_NUMERICSERV);
-	log_debug("trying host %s port %s...", host, serv);
+		getnameinfo(ai->ai_addr, SA_LEN(ai->ai_addr),
+		    host, sizeof(host), serv, sizeof(serv),
+			NI_NUMERICHOST | NI_NUMERICSERV);
+		log_debug("trying host %s port %s...", host, serv);
 
-	params.dst = ai->ai_addr;
+		params.dst = ai->ai_addr;
+	} else {
+		params.dst = (struct sockaddr *)&params.unix;
+#ifdef HAVE_STRUCT_SOCKADDR_SA_LEN
+		params.dst->sa_len = sizeof(params.unix);
+#endif
+		done = 1;
+	}
+
 	if (smtp_connect(&params, NULL) == NULL)
 		fatal("smtp_connect");
 
@@ -477,7 +506,8 @@ smtp_closed(void *tag, struct smtp_client *proto)
 {
 	log_debug("connection closed...");
 
-	ai = ai->ai_next;
+	if (ai)
+		ai = ai->ai_next;
 	if (noaction && ai == NULL)
 		done = 1;
 
