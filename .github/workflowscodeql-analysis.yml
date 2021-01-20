@@ -57,9 +57,10 @@ jobs:
     #    uses a compiled language
 
     - run: |
-       sh bootstrap
-       ./configure
-       make
+      apt install libevent-devel
+      sh bootstrap
+      ./configure
+      make
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
