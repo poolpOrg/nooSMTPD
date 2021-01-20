@@ -523,7 +523,7 @@ lka_submit(struct lka_session *lks, struct rule *rule, struct expandnode *xn)
 	struct envelope		*ep;
 	struct dispatcher	*dsp;
 	const char		*user;
-	const char		*format;
+	const char		*format = NULL;
 
 	ep = xmemdup(&lks->envelope, sizeof *ep);
 	(void)strlcpy(ep->dispatcher, rule->dispatcher, sizeof ep->dispatcher);

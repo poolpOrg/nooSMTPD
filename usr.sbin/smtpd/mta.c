@@ -1155,7 +1155,7 @@ static void
 mta_connect(struct mta_connector *c)
 {
 	struct mta_route	*route;
-	struct mta_mx		*mx;
+	struct mta_mx		*mx = NULL;
 	struct mta_limits	*l = c->relay->limits;
 	int			 limits;
 	time_t			 nextconn, now;
