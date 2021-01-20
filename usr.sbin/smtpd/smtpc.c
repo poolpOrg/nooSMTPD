@@ -236,7 +236,14 @@ parse_server(char *server)
 		host = server;
 	}
 
-	if (host[0] == '[') {
+	if (host[0] == '/') {
+		memset(&params.unix, 0, sizeof(params.unix));
+		params.unix.sun_family = AF_UNIX;
+		if (strlcpy(params.unix.sun_path, host, sizeof(params.unix.sun_path))
+			>= sizeof(params.unix.sun_path))
+			fatalx("socket path too long");
+	}
+	else if (host[0] == '[') {
 		/* IPV6 address? */
 		p = strchr(host, ']');
 		if (p) {
@@ -294,6 +301,9 @@ parse_server(char *server)
 	}
 	else
 		fatalx("invalid url scheme %s", scheme);
+
+	if (params.unix.sun_path[0] != '\0')
+		return;
 
 	if (port == NULL)
 		port = "smtp";
