@@ -228,10 +228,14 @@ smtp_setup_events(void)
 	const char	*k;
 
 	TAILQ_FOREACH(l, env->sc_listeners, entry) {
-		log_debug("debug: smtp: listen on %s port %d flags 0x%01x"
-		    " pki \"%s\""
-		    " ca \"%s\"", ss_to_text(&l->ss), ntohs(l->port),
-		    l->flags, l->pki_name, l->ca_name);
+		if (l->socket_path[0] == '\0')
+			log_debug("debug: smtp: listen on %s port %d flags 0x%01x"
+			    " pki \"%s\""
+			    " ca \"%s\"", ss_to_text(&l->ss), ntohs(l->port),
+		    	l->flags, l->pki_name, l->ca_name);
+		else
+			log_debug("debug: smtp: listen on unix://%s flags 0x%01x",
+				l->socket_path, l->flags);
 
 		io_set_nonblocking(l->fd);
 		if (listen(l->fd, SMTPD_BACKLOG) == -1)
