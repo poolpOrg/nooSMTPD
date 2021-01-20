@@ -8,7 +8,7 @@
 
 > nooSMTPD is ... Not OpenBSD's OpenSMTPD.
 >
-> It's a customized OpenSMTPD that I run on my machines and which contain various diffs that were submitted to OpenBSD but not merged for reasons ranging from "not suitable for OpenBSD" to "breaks legacy behaviour".
+> It's a customized OpenSMTPD that I run on my machines and which contain various diffs that were submitted to OpenBSD but not merged for reasons ranging from "not suitable for OpenBSD" to "breaks legacy behaviour". It contains personal experiments and stuff I'm working on. All diffs are shared with OpenBSD.
 
 
 OpenSMTPD is a FREE implementation of the server-side SMTP protocol as
