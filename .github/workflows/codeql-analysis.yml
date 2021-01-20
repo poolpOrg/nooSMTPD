@@ -39,8 +39,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        apt update
-        apt install -y --no-install-recommends autoconf automake bison build-essential libevent-dev libssl-dev libtool libpam0g-dev zlib1g-dev gcc-10
+        sudo apt update
+        sudo apt install -y --no-install-recommends autoconf automake bison build-essential libevent-dev libssl-dev libtool libpam0g-dev zlib1g-dev gcc-10
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
