@@ -139,7 +139,7 @@ static struct listen_opts {
 	int		family;
 	in_port_t	port;
 	uint16_t	ssl;
-	char		   *sockname;
+	char		   *socket_path;
 	char	       *filtername;
 	char	       *pki;
 	char	       *ca;
@@ -2500,7 +2500,7 @@ socket_listener	: SOCKET sock_listen {
 			create_sock_listener(&listen_opts);
 		}
 		| SOCKET STRING sock_listen {
-			listen_opts.sockname = $2;
+			listen_opts.socket_path = $2;
 			create_sock_listener(&listen_opts);
 		}
 		;
@@ -3235,7 +3235,7 @@ create_sock_listener(struct listen_opts *lo)
 	l->ss.ss_len = sizeof(struct sockaddr *);
 #endif
 	l->local = 1;
-	if (lo->sockname == NULL)
+	if (lo->socket_path == NULL)
 		conf->sc_sock_listener = l;
 	config_listener(l, lo);
 }
@@ -3346,8 +3346,8 @@ config_listener(struct listener *h,  struct listen_opts *lo)
 	if (lo->ssl & F_STARTTLS_REQUIRE)
 		h->flags |= F_STARTTLS_REQUIRE;
 
-	if (lo->sockname)
-		(void)strlcpy(h->socket_path, lo->sockname, sizeof(h->socket_path));
+	if (lo->socket_path)
+		(void)strlcpy(h->socket_path, lo->socket_path, sizeof(h->socket_path));
 
 	if (h != conf->sc_sock_listener)
 		TAILQ_INSERT_TAIL(conf->sc_listeners, h, entry);
