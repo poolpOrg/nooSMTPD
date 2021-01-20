@@ -646,6 +646,11 @@ smtp_session(struct listener *listener, int sock,
 		(void)strlcpy(s->rdns, hostname, sizeof(s->rdns));
 		s->fcrdns = 1;
 		smtp_lookup_servername(s);
+	} else if (listener->socket_path[0] != '\0') {
+		s->flags |= SF_AUTHENTICATED;
+		(void)strlcpy(s->rdns, listener->hostname, sizeof(s->rdns));
+		s->fcrdns = 1;
+		smtp_lookup_servername(s);
 	} else {
 		resolver_getnameinfo((struct sockaddr *)&s->ss,
 		    NI_NAMEREQD | NI_NUMERICSERV, smtp_getnameinfo_cb, s);

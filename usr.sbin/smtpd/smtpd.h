@@ -556,6 +556,7 @@ struct listener {
 	in_port_t		 port;
 	struct timeval		 timeout;
 	struct event		 ev;
+	char			 socket_path[PATH_MAX];
 	char			 filter_name[PATH_MAX];
 	char			 pki_name[PATH_MAX];
 	char			 ca_name[PATH_MAX];

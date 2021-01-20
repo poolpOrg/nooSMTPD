@@ -23,7 +23,9 @@
 #include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/tree.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 
 #include <err.h>
 #include <errno.h>
@@ -137,6 +139,40 @@ smtp_configure(void)
 }
 
 static void
+smtp_create_unix_socket(struct listener *l)
+{
+	struct sockaddr_un	s_un;
+	mode_t			old_umask;
+
+	memset(&s_un, 0, sizeof(s_un));
+	s_un.sun_family = AF_UNIX;
+	if (strlcpy(s_un.sun_path, l->socket_path,
+	    sizeof(s_un.sun_path)) >= sizeof(s_un.sun_path))
+		fatal("smtp: socket name too long");
+
+	if (connect(l->fd, (struct sockaddr *)&s_un, sizeof(s_un)) == 0)
+		fatalx("smtp socket already listening");
+
+	if (unlink(l->socket_path) == -1)
+		if (errno != ENOENT)
+			fatal("smtp: cannot unlink socket");
+
+	old_umask = umask(S_IXUSR|S_IXGRP|S_IWOTH|S_IROTH|S_IXOTH);
+	if (bind(l->fd, (struct sockaddr *)&s_un, sizeof(s_un)) == -1) {
+		(void)umask(old_umask);
+		fatal("smtp: bind");
+	}
+	(void)umask(old_umask);
+
+	if (chmod(l->socket_path,
+		S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH) == -1) {
+		(void)unlink(l->socket_path);
+		fatal("smtp: chmod");
+	}
+}
+
+
+static void
 smtp_setup_listeners(void)
 {
 	struct listener	       *l;
@@ -160,6 +196,12 @@ smtp_setup_listeners(void)
 			sizeof(opt)) < 0)
 			fatal("smtpd: setsockopt");
 #endif
+
+		if (l->ss.ss_family == AF_UNIX) {
+			smtp_create_unix_socket(l);
+			continue;
+		}
+
 #ifdef IPV6_V6ONLY
 		/*
 		 * If using IPv6, bind only to IPv6 if possible.
@@ -185,10 +227,14 @@ smtp_setup_events(void)
 	const char	*k;
 
 	TAILQ_FOREACH(l, env->sc_listeners, entry) {
-		log_debug("debug: smtp: listen on %s port %d flags 0x%01x"
-		    " pki \"%s\""
-		    " ca \"%s\"", ss_to_text(&l->ss), ntohs(l->port),
-		    l->flags, l->pki_name, l->ca_name);
+		if (l->socket_path[0] == '\0')
+			log_debug("debug: smtp: listen on %s port %d flags 0x%01x"
+			    " pki \"%s\""
+			    " ca \"%s\"", ss_to_text(&l->ss), ntohs(l->port),
+				l->flags, l->pki_name, l->ca_name);
+		else
+			log_debug("debug: smtp: listen on unix://%s flags 0x%01x",
+				l->socket_path, l->flags);
 
 		io_set_nonblocking(l->fd);
 		if (listen(l->fd, SMTPD_BACKLOG) == -1)
