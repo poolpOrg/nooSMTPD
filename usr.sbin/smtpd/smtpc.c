@@ -209,15 +209,6 @@ parse_server(char *server)
 	port = NULL;
 	scheme = server;
 
-	if (*server == '/') {
-		memset(&params.unix, 0, sizeof(params.unix));
-		params.unix.sun_family = AF_UNIX;
-		if (strlcpy(params.unix.sun_path, server, sizeof(params.unix.sun_path))
-			>= sizeof(params.unix.sun_path))
-			fatalx("socket path too long");
-		return;
-	}
-
 	p = strstr(server, "://");
 	if (p) {
 		*p = '\0';
@@ -237,10 +228,10 @@ parse_server(char *server)
 	}
 
 	if (host[0] == '/') {
-		memset(&params.unix, 0, sizeof(params.unix));
-		params.unix.sun_family = AF_UNIX;
-		if (strlcpy(params.unix.sun_path, host, sizeof(params.unix.sun_path))
-			>= sizeof(params.unix.sun_path))
+		memset(&params.un, 0, sizeof(params.un));
+		params.un.sun_family = AF_UNIX;
+		if (strlcpy(params.un.sun_path, host, sizeof(params.un.sun_path))
+			>= sizeof(params.un.sun_path))
 			fatalx("socket path too long");
 	}
 	else if (host[0] == '[') {
@@ -302,7 +293,7 @@ parse_server(char *server)
 	else
 		fatalx("invalid url scheme %s", scheme);
 
-	if (params.unix.sun_path[0] != '\0')
+	if (params.un.sun_path[0] != '\0')
 		return;
 
 	if (port == NULL)
@@ -363,7 +354,7 @@ resume(void)
 		return;
 	}
 
-	if (params.unix.sun_path[0] == '\0') {
+	if (params.un.sun_path[0] == '\0') {
 		if (ai == NULL)
 			fatalx("no more host");
 
@@ -374,9 +365,9 @@ resume(void)
 
 		params.dst = ai->ai_addr;
 	} else {
-		params.dst = (struct sockaddr *)&params.unix;
+		params.dst = (struct sockaddr *)&params.un;
 #ifdef HAVE_STRUCT_SOCKADDR_SA_LEN
-		params.dst->sa_len = sizeof(params.unix);
+		params.dst->sa_len = sizeof(params.un);
 #endif
 		done = 1;
 	}
