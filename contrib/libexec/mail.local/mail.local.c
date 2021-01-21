@@ -113,6 +113,7 @@ int
 storemail(char *from)
 {
 	FILE *fp = NULL;
+	char buf[26];
 	time_t tval;
 	int fd, eline;
 	size_t len;
@@ -126,7 +127,7 @@ storemail(char *from)
 	free(tbuf);
 
 	(void)time(&tval);
-	(void)fprintf(fp, "From %s %s", from, ctime(&tval));
+	(void)fprintf(fp, "From %s %s", from, ctime_r(&tval, (char *)&buf));
 
 	for (eline = 1, tbuf = NULL; (line = fgetln(stdin, &len));) {
 		/* We have to NUL-terminate the line since fgetln does not */

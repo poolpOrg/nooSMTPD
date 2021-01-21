@@ -192,7 +192,7 @@ ss_to_text(const struct sockaddr_storage *ss)
 const char *
 time_to_text(time_t when)
 {
-	struct tm *lt;
+	struct tm *lt, ltb;
 	static char buf[40];
 	char *day[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 	char *month[] = {"Jan","Feb","Mar","Apr","May","Jun",
@@ -200,7 +200,7 @@ time_to_text(time_t when)
 	const char *tz;
 	long offset;
 
-	lt = localtime(&when);
+	lt = localtime_r(&when, &ltb);
 	if (lt == NULL || when == 0)
 		fatalx("time_to_text: localtime");
 

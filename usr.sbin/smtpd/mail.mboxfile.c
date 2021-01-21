@@ -67,6 +67,7 @@ static void
 mboxfile_engine(const char *sender, const char *filename)
 {
 	int	fd;
+	char	buf[26];
 	FILE    *fp;
 	char	*line = NULL;
 	size_t	linesize = 0;
@@ -88,7 +89,7 @@ mboxfile_engine(const char *sender, const char *filename)
 	if ((fp = fdopen(fd, "w")) == NULL)
 		err(EX_TEMPFAIL, NULL);
 
-	fprintf(fp, "From %s %s", sender, ctime(&now));
+	fprintf(fp, "From %s %s", sender, ctime_r(&now, (char *)&buf));
 	while ((linelen = getline(&line, &linesize, stdin)) != -1) {
 		line[strcspn(line, "\n")] = '\0';
 		if (strncmp(line, "From ", 5) == 0)
