@@ -31,7 +31,7 @@
 # define __attribute__(x)
 #else
 #ifndef __unused
-#define __unused __attribute__((unused))
+#define __unused
 #endif
 #endif
 
