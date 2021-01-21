@@ -9,5 +9,5 @@ res_randomid(void)
 
 	/* This is from musl C library */
 	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return ts.tv_nsec + ts.tv_nsec / 65536UL & 0xffff;
+	return (ts.tv_nsec + (ts.tv_nsec / 65536UL)) & 0xffff;
 }

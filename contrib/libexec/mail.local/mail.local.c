@@ -250,7 +250,7 @@ retry:
 	}
 
 	curoff = lseek(mbfd, 0, SEEK_END);
-	(void)snprintf(biffmsg, sizeof biffmsg, "%s@%lld\n", name, curoff);
+	(void)snprintf(biffmsg, sizeof biffmsg, "%s@%lld\n", name, (long long int)curoff);
 	if (lseek(fd, 0, SEEK_SET) == (off_t)-1) {
 		mwarn("temporary file: %s", strerror(errno));
 		goto bad;

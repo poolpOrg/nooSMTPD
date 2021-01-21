@@ -410,7 +410,7 @@ lka_filter_init(void)
 void
 lka_filter_register_hook(const char *name, const char *hook)
 {
-	struct dict		*subsystem;
+	struct dict		*subsystem = NULL;
 	struct filter		*filter;
 	const char	*filter_name;
 	void		*iter;
@@ -420,7 +420,8 @@ lka_filter_register_hook(const char *name, const char *hook)
 		subsystem = &filter_smtp_in;
 		hook += 8;
 	}
-	else
+
+	if (subsystem == NULL)
 		fatalx("Invalid message direction: %s", hook);
 
 	for (i = 0; i < nitems(filter_execs); i++)
