@@ -256,7 +256,7 @@ retry:
 	}
 
 	while ((nr = read(fd, buf, sizeof(buf))) > 0)
-		for (off = 0; off < nr;  off += nw)
+		for (off = 0; off < (size_t)nr;  off += nw)
 			if ((nw = write(mbfd, buf + off, nr - off)) == -1) {
 				mwarn("%s: %s", path, strerror(errno));
 				(void)ftruncate(mbfd, curoff);
@@ -291,6 +291,7 @@ notifybiff(char *msg)
 	struct addrinfo hints, *res;
 	static int f = -1;
 	size_t len;
+	ssize_t n;
 	int error;
 
 	if (res0 == NULL) {
@@ -322,7 +323,8 @@ notifybiff(char *msg)
 	}
 
 	len = strlen(msg) + 1;	/* XXX */
-	if (sendto(f, msg, len, 0, res->ai_addr, res->ai_addrlen) != len)
+	n = sendto(f, msg, len, 0, res->ai_addr, res->ai_addrlen);
+	if (n == -1 || (size_t)n != len)
 		mwarn("sendto biff: %s", strerror(errno));
 }
 
