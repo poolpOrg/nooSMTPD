@@ -29,6 +29,10 @@
 #include "config.h"
 #ifdef NO_ATTRIBUTE_ON_RETURN_TYPE
 # define __attribute__(x)
+#else
+#ifndef __unused
+#define __unused __attribute__((unused))
+#endif
 #endif
 
 #ifndef	_SYS_TREE_H_

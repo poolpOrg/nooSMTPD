@@ -34,6 +34,15 @@
 
 /* OPENBSD ORIGINAL: sys/sys/queue.h */
 
+#include "config.h"
+#ifdef NO_ATTRIBUTE_ON_RETURN_TYPE
+# define __attribute__(x)
+#else
+#ifndef __unused
+#define __unused __attribute__((unused))
+#endif
+#endif
+
 #ifndef	_FAKE_QUEUE_H_
 #define	_FAKE_QUEUE_H_
 
