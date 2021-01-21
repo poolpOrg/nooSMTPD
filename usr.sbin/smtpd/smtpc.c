@@ -48,6 +48,7 @@ static int verbose = 1;
 static int done = 0;
 static int noaction = 0;
 static struct addrinfo *res0, *ai;
+static struct sockaddr_un un;
 static struct smtp_params params;
 static struct smtp_mail mail;
 static const char *servname = NULL;
@@ -228,10 +229,10 @@ parse_server(char *server)
 	}
 
 	if (host[0] == '/') {
-		memset(&params.un, 0, sizeof(params.un));
-		params.un.sun_family = AF_UNIX;
-		if (strlcpy(params.un.sun_path, host, sizeof(params.un.sun_path))
-			>= sizeof(params.un.sun_path))
+		memset(&un, 0, sizeof(un));
+		un.sun_family = AF_UNIX;
+		if (strlcpy(un.sun_path, host, sizeof(un.sun_path))
+			>= sizeof(un.sun_path))
 			fatalx("socket path too long");
 	}
 	else if (host[0] == '[') {
@@ -293,7 +294,7 @@ parse_server(char *server)
 	else
 		fatalx("invalid url scheme %s", scheme);
 
-	if (params.un.sun_path[0] != '\0')
+	if (un.sun_path[0] != '\0')
 		return;
 
 	if (port == NULL)
@@ -348,13 +349,14 @@ resume(void)
 	static int started = 0;
 	char host[256];
 	char serv[16];
+	struct sockaddr *sa;
 
 	if (done) {
 		event_loopexit(NULL);
 		return;
 	}
 
-	if (params.un.sun_path[0] == '\0') {
+	if (un.sun_path[0] == '\0') {
 		if (ai == NULL)
 			fatalx("no more host");
 
@@ -365,10 +367,11 @@ resume(void)
 
 		params.dst = ai->ai_addr;
 	} else {
-		params.dst = (struct sockaddr *)&params.un;
+		sa = (struct sockaddr *)&un;
 #ifdef HAVE_STRUCT_SOCKADDR_SA_LEN
-		params.dst->sa_len = sizeof(params.un);
+		sa->sa_len = sizeof(un);
 #endif
+		params.dst = sa;
 		done = 1;
 	}
 
