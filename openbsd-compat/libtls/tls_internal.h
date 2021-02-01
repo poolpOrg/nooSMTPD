@@ -26,7 +26,11 @@
 
 #include <openssl/ssl.h>
 
-#define TLS_CIPHERS_DEFAULT	"HIGH:!aNULL"
+#ifndef TLS_DEFAULT_CA_FILE
+#define	TLS_DEFAULT_CA_FILE	"/etc/ssl/cert.pem"
+#endif
+
+#define TLS_CIPHERS_DEFAULT	"TLSv1.3:TLSv1.2+AEAD+ECDHE:TLSv1.2+AEAD+DHE"
 #define TLS_CIPHERS_COMPAT	"HIGH:!aNULL"
 #define TLS_CIPHERS_LEGACY	"HIGH:MEDIUM:!aNULL"
 #define TLS_CIPHERS_ALL		"ALL:!aNULL:!eNULL"
@@ -105,6 +109,7 @@ struct tls_config {
 	int verify_name;
 	int verify_time;
 	int skip_private_key_check;
+	int use_fake_private_key;
 };
 
 struct tls_conninfo {
@@ -286,6 +291,7 @@ int tls_password_cb(char *_buf, int _size, int _rwflag, void *_u);
 
 /* XXX this function is not fully hidden so relayd can use it */
 void tls_config_skip_private_key_check(struct tls_config *config);
+void tls_config_use_fake_private_key(struct tls_config *config);
 
 /* XXX prototypes brought for OpenSMTPD libtls wrapper to OpenSSL */
 int ASN1_time_parse(const char *bytes, size_t len, struct tm *tm, int mode);

@@ -75,6 +75,7 @@
 #include <string.h>
 #include <sysexits.h>
 #include <time.h>
+#include <tls.h>
 #include <unistd.h>
 #ifdef HAVE_UTIL_H
 #include <util.h>
@@ -667,7 +668,7 @@ main(int argc, char *argv[])
 
 	env->sc_opts |= opts;
 
-	ssl_init();
+	tls_init();
 
 	if (parse_config(conf, conffile, opts))
 		exit(1);

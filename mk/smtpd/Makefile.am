@@ -105,7 +105,9 @@ if NEED_LIBASR
 AM_CPPFLAGS+=	-I$(top_srcdir)/openbsd-compat/libasr
 endif
 
-LDADD=			$(LIBCOMPAT) $(DB_LIB) $(ASR_LIB)
+LIBTLS=-ltls
+
+LDADD=			$(LIBCOMPAT) $(DB_LIB) $(ASR_LIB) $(LIBTLS)
 
 # need to define _GNU_SOURCE to get:
 # EAI_NODATA defined

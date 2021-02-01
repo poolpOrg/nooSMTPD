@@ -156,6 +156,8 @@ dispatcher(void)
 {
 	struct passwd	*pw;
 
+	ca_engine_init();
+
 	mda_postfork();
 	mta_postfork();
 	smtp_postfork();
@@ -197,8 +199,6 @@ dispatcher(void)
 	config_peer(PROC_LKA);
 	config_peer(PROC_CONTROL);
 	config_peer(PROC_CA);
-
-	ca_engine_init();
 
 #if HAVE_PLEDGE
 	if (pledge("stdio inet unix recvfd sendfd", NULL) == -1)

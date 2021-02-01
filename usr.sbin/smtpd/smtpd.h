@@ -569,6 +569,10 @@ struct listener {
 	TAILQ_ENTRY(listener)	 entry;
 
 	int			 local;		/* there must be a better way */
+
+	struct tls		*tls;
+	struct pki		**pki;
+	int			 pkicount;
 };
 
 struct smtpd {
@@ -1207,6 +1211,7 @@ struct dispatcher_remote {
 
 	char	*source;
 
+	struct tls_config *tls_config;
 	char	*ca;
 	char	*pki;
 
@@ -1721,6 +1726,7 @@ const char *rule_to_text(struct rule *);
 const char *sockaddr_to_text(struct sockaddr *);
 const char *mailaddr_to_text(const struct mailaddr *);
 const char *expandnode_to_text(struct expandnode *);
+const char *tls_to_text(struct tls *);
 
 
 /* util.c */

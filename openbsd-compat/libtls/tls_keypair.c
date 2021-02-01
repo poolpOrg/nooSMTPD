@@ -139,7 +139,7 @@ tls_keypair_load_cert(struct tls_keypair *keypair, struct tls_error *error,
 {
 	char *errstr = "unknown";
 	BIO *cert_bio = NULL;
-	int ssl_err;
+	unsigned long ssl_err;
 	int rv = -1;
 
 	X509_free(*cert);
