@@ -93,6 +93,9 @@ smtpd_CFLAGS+=		-DCA_FILE=\"$(CA_FILE)\"
 
 AM_CPPFLAGS=		-I$(top_srcdir)/usr.sbin/smtpd	\
 			-I$(compat_srcdir)
+
+LDADD=			$(LIBCOMPAT) $(DB_LIB) $(ASR_LIB)
+
 if !NEED_ERR_H
 AM_CPPFLAGS += -I$(top_srcdir)/openbsd-compat/err_h
 endif
@@ -105,13 +108,11 @@ if NEED_LIBASR
 AM_CPPFLAGS+=	-I$(top_srcdir)/openbsd-compat/libasr
 endif
 
-LIBTLS=-ltls
-if NEED_LIBTLS
+if !NEED_LIBTLS
 AM_CPPFLAGS+=	-I$(top_srcdir)/openbsd-compat/libtls
+LDADD+=		-ltls
 endif
 
-
-LDADD=			$(LIBCOMPAT) $(DB_LIB) $(ASR_LIB) $(LIBTLS)
 
 # need to define _GNU_SOURCE to get:
 # EAI_NODATA defined
