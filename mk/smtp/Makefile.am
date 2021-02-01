@@ -22,6 +22,13 @@ LIBCOMPAT=		$(top_builddir)/openbsd-compat/libopenbsd.a
 
 LDADD=			$(LIBCOMPAT)
 
+if NEED_LIBTLS
+AM_CPPFLAGS+=	-I$(top_srcdir)/openbsd-compat/libtls
+else
+LDADD+=		-ltls
+endif
+
+
 # need to define _GNU_SOURCE to get:
 # EAI_NODATA defined
 # {v,}asprintf
