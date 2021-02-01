@@ -184,12 +184,12 @@ AC_CHECK_HEADER([asr.h],
 ])
 AM_CONDITIONAL([NEED_LIBASR], [test x"$need_libasr" = x"yes"])
 
-need_libtls=yes
+need_libtls=no
 AC_CHECK_HEADER([tls.h],
 	[],
-	[need_libtls=no],
+	[need_libtls=yes],
 	[])
-AM_CONDITIONAL([NEED_LIBTLS], [test x"$need_libtls" = x"no"])
+AM_CONDITIONAL([NEED_LIBTLS], [test x"$need_libtls" = x"yes"])
 
 
 #
@@ -1994,7 +1994,8 @@ if test "$need_libasr" = "no" -a "x$ac_cv_search_event_asr_run" = "xno"; then
 	LIBS="$LIBS -lasr"
 fi
 
-if test "$need_libtls" = "yes"; then
+if test "$need_libtls" = "no"; then
+   	# no custom libtls, use system one
 	LIBS="$LIBS -ltls"
 fi
 
