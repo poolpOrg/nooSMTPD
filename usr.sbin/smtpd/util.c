@@ -32,6 +32,7 @@
 #include <arpa/inet.h>
 
 #include <ctype.h>
+#include <err.h>
 #include <errno.h>
 #include <event.h>
 #include <fcntl.h>

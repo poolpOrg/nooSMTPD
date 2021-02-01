@@ -46,6 +46,7 @@ struct smtp_params {
 	/* TLS options */
 	int			 tls_req;	/* requested TLS mode */
 	int			 tls_verify;	/* need valid server certificate */
+	const char 		*tls_servname;	/* SNI */
 
 	/* SMTP options */
 	int			 lmtp;		/* use LMTP protocol */

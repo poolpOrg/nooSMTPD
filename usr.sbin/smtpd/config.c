@@ -247,6 +247,7 @@ purge_config(uint8_t what)
 	if (what & PURGE_LISTENERS) {
 		while ((l = TAILQ_FIRST(env->sc_listeners)) != NULL) {
 			TAILQ_REMOVE(env->sc_listeners, l, entry);
+			free(l->pki);
 			free(l);
 		}
 		free(env->sc_listeners);

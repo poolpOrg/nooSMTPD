@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
+#include <tls.h>
 #include <unistd.h>
 
 #include <openssl/ssl.h>
@@ -52,8 +53,7 @@ static struct sockaddr_un un;
 static struct smtp_params params;
 static struct smtp_mail mail;
 static const char *servname = NULL;
-
-static SSL_CTX *ssl_ctx;
+static struct tls_config *tls_config;
 
 static void
 usage(void)
@@ -160,16 +160,20 @@ main(int argc, char **argv)
 		mail.rcptcount = argc;
 	}
 
-	ssl_init();
+	tls_init();
 	event_init();
 
-	ssl_ctx = ssl_ctx_create(NULL, NULL, 0, NULL);
-	if (!SSL_CTX_load_verify_locations(ssl_ctx,
-	    X509_get_default_cert_file(), NULL))
-		fatal("SSL_CTX_load_verify_locations");
-	if (!SSL_CTX_set_ssl_version(ssl_ctx, SSLv23_client_method()))
-		fatal("SSL_CTX_set_ssl_version");
-	SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_NONE , NULL);
+	tls_config = tls_config_new();
+	if (tls_config == NULL)
+		fatal("tls_config_new");
+	if (tls_config_set_ca_file(tls_config, tls_default_ca_cert_file()) == -1)
+		fatal("tls_set_ca_file");
+	if (!params.tls_verify) {
+		tls_config_insecure_noverifycert(tls_config);
+		tls_config_insecure_noverifyname(tls_config);
+		tls_config_insecure_noverifytime(tls_config);
+	} else
+		tls_config_verify(tls_config);
 
 #if HAVE_PLEDGE
 	if (pledge("stdio inet dns tmppath", NULL) == -1)
@@ -302,6 +306,7 @@ parse_server(char *server)
 
 	if (servname == NULL)
 		servname = host;
+	params.tls_servname = servname;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
@@ -430,11 +435,16 @@ smtp_verify_server_cert(void *tag, struct smtp_client *proto, void *ctx)
 void
 smtp_require_tls(void *tag, struct smtp_client *proto)
 {
-	SSL *ssl = NULL;
+	struct tls *tls;
 
-	if ((ssl = SSL_new(ssl_ctx)) == NULL)
-		fatal("SSL_new");
-	smtp_set_tls(proto, ssl);
+	tls = tls_client();
+	if (tls == NULL)
+		fatal("tls_client");
+
+	if (tls_configure(tls, tls_config) == -1)
+		fatal("tls_configure");
+
+	smtp_set_tls(proto, tls);
 }
 
 void

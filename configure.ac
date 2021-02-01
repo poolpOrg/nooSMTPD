@@ -184,6 +184,14 @@ AC_CHECK_HEADER([asr.h],
 ])
 AM_CONDITIONAL([NEED_LIBASR], [test x"$need_libasr" = x"yes"])
 
+need_libtls=no
+AC_CHECK_HEADER([tls.h],
+	[],
+	[need_libtls=yes],
+	[])
+AM_CONDITIONAL([NEED_LIBTLS], [test x"$need_libtls" = x"yes"])
+
+
 #
 # CHECKS FOR TYPES
 #
@@ -619,6 +627,7 @@ AC_CHECK_FUNCS([ \
 	sysconf \
 	tcgetpgrp \
 	time \
+	timingsafe_memcmp \
 	usleep \
 	vasprintf \
 	vsnprintf \
@@ -1986,6 +1995,11 @@ if test "$need_libasr" = "no" -a "x$ac_cv_search_event_asr_run" = "xno"; then
 	LIBS="$LIBS -lasr"
 fi
 
+if test "x$ac_cv_have_decl_LIBRESSL_VERSION_NUMBER" = "xyes"; then
+	LIBS="$LIBS -ltls"
+fi
+
+
 
 LIBS="$LIBS ${SMTPDLIBS}"
 ##end of chl
@@ -2032,6 +2046,7 @@ AM_CONDITIONAL([NEED_STRSEP], [test "x$ac_cv_func_strsep" != "xyes"])
 AM_CONDITIONAL([NEED_STRTONUM], [test "x$ac_cv_func_strtonum" != "xyes"])
 AM_CONDITIONAL([NEED_STRNDUP], [test "x$ac_cv_func_strndup" != "xyes"])
 AM_CONDITIONAL([NEED_STRNLEN], [test "x$ac_cv_func_strnlen" != "xyes"])
+AM_CONDITIONAL([NEED_TIMINGSAFE_MEMCMP], [test "x$ac_cv_func_timingsafe_memcmp" != "xyes"])
 AM_CONDITIONAL([NEED_WAITPID], [test "x$ac_cv_func_waitpid" != "xyes"])
 AM_CONDITIONAL([NEED_VIS], [test "x$ac_cv_func_strnvis" != "xyes" -o "x$BROKEN_STRNVIS" = "x1"])
 AM_CONDITIONAL([NEED_USLEEP], [test "x$ac_cv_func_usleep" != "xyes"])
@@ -2041,6 +2056,8 @@ AM_CONDITIONAL([NEED_RES_RANDOMID], [test "x$ac_cv_search_res_randomid" = "xno" 
 
 AM_CONDITIONAL([NEED_ARC4RANDOM], [test "x$ac_cv_func_arc4random" != "xyes" -a "x$ac_cv_have_decl_LIBRESSL_VERSION_NUMBER" != "xyes"])
 AM_CONDITIONAL([NEED_SSL_CTX_USE_CERTIFICATE_CHAIN_MEM], [test "x$ac_cv_have_decl_LIBRESSL_VERSION_NUMBER" != "xyes"])
+
+AM_CONDITIONAL([NEED_LIBTLS], [test "x$ac_cv_have_decl_LIBRESSL_VERSION_NUMBER" != "xyes"])
 
 AM_CONDITIONAL([NEED_PROGNAME], [test "x$ac_cv_libc_defines___progname" != "xyes"])
 ##
