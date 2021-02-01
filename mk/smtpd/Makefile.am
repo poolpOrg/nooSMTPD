@@ -108,8 +108,9 @@ if NEED_LIBASR
 AM_CPPFLAGS+=	-I$(top_srcdir)/openbsd-compat/libasr
 endif
 
-if !NEED_LIBTLS
+if NEED_LIBTLS
 AM_CPPFLAGS+=	-I$(top_srcdir)/openbsd-compat/libtls
+else
 LDADD+=		-ltls
 endif
 
