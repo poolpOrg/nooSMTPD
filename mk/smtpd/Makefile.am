@@ -106,6 +106,10 @@ AM_CPPFLAGS+=	-I$(top_srcdir)/openbsd-compat/libasr
 endif
 
 LIBTLS=-ltls
+if NEED_LIBTLS
+AM_CPPFLAGS+=	-I$(top_srcdir)/openbsd-compat/libtls
+endif
+
 
 LDADD=			$(LIBCOMPAT) $(DB_LIB) $(ASR_LIB) $(LIBTLS)
 
