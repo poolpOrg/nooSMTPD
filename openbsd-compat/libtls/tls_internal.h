@@ -19,8 +19,6 @@
 #ifndef HEADER_TLS_INTERNAL_H
 #define HEADER_TLS_INTERNAL_H
 
-#include <pthread.h>
-
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
@@ -79,7 +77,6 @@ struct tls_ticket_key {
 struct tls_config {
 	struct tls_error error;
 
-	pthread_mutex_t mutex;
 	int refcount;
 
 	char *alpn;

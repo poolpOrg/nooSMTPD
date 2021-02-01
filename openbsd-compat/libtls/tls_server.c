@@ -57,9 +57,7 @@ tls_server_conn(struct tls *ctx)
 
 	conn_ctx->flags |= TLS_SERVER_CONN;
 
-	pthread_mutex_lock(&ctx->config->mutex);
 	ctx->config->refcount++;
-	pthread_mutex_unlock(&ctx->config->mutex);
 
 	conn_ctx->config = ctx->config;
 	conn_ctx->keypair = ctx->config->keypair;

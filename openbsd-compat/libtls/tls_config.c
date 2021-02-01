@@ -22,7 +22,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -97,9 +96,6 @@ tls_config_new_internal(void)
 	if ((config = calloc(1, sizeof(*config))) == NULL)
 		return (NULL);
 
-	if (pthread_mutex_init(&config->mutex, NULL) != 0)
-		goto err;
-
 	config->refcount = 1;
 	config->session_fd = -1;
 
@@ -161,9 +157,7 @@ tls_config_free(struct tls_config *config)
 	if (config == NULL)
 		return;
 
-	pthread_mutex_lock(&config->mutex);
 	refcount = --config->refcount;
-	pthread_mutex_unlock(&config->mutex);
 
 	if (refcount > 0)
 		return;
@@ -181,8 +175,6 @@ tls_config_free(struct tls_config *config)
 	free((char *)config->ciphers);
 	free((char *)config->crl_mem);
 	free(config->ecdhecurves);
-
-	/*pthread_mutex_destroy(&config->mutex);*/
 
 	free(config);
 }
