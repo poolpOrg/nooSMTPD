@@ -546,7 +546,7 @@ SMTP LIMIT limits_smtp
 	conf->sc_tls_ciphers = $3;
 }
 | SMTP CURVES STRING {
-	conf->sc_tls_ciphers = $3;
+	conf->sc_tls_curves = $3;
 }
 | SMTP MAX_MESSAGE_SIZE size {
 	conf->sc_maxsize = $3;
