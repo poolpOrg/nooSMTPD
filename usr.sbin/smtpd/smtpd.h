@@ -651,6 +651,7 @@ struct smtpd {
 	struct dict			       *sc_limits_dict;
 
 	char				       *sc_tls_ciphers;
+	char				       *sc_tls_curves;
 
 	char				       *sc_subaddressing_delim;
 
