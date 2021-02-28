@@ -247,6 +247,8 @@ smtp_setup_listener_tls(struct listener *l)
 	curves = NULL;
 	if (l->tls_curves)
 		curves = l->tls_curves;
+	else if (env->sc_tls_curves)
+		curves = env->sc_tls_curves;
 
 	if (curves)
 		if (tls_config_set_ecdhecurves(config, curves) == -1)
