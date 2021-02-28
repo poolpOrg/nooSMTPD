@@ -236,6 +236,8 @@ smtp_setup_listener_tls(struct listener *l)
 	struct ca *ca;
 	char *ciphers;
 	char *curves;
+	char *protocols;
+	uint32_t protno;
 	int i;
 
 	if ((config = tls_config_new()) == NULL)
@@ -253,6 +255,12 @@ smtp_setup_listener_tls(struct listener *l)
 	else if (env->sc_tls_curves)
 		curves = env->sc_tls_curves;
 
+	protocols = NULL;
+	if (l->tls_protocols)
+		protocols = l->tls_protocols;
+	else if (env->sc_tls_protocols)
+		protocols = env->sc_tls_protocols;
+
 	if (ciphers)
 		if (tls_config_set_ciphers(config, ciphers) == -1)
 			err(1, "%s", tls_config_error(config));
@@ -260,6 +268,13 @@ smtp_setup_listener_tls(struct listener *l)
 	if (curves)
 		if (tls_config_set_ecdhecurves(config, curves) == -1)
 			err(1, "%s", tls_config_error(config));
+
+	if (protocols) {
+		if (tls_config_parse_protocols(&protno, protocols) == -1)
+			errx(1, "tls_config_parse_protocols: invalid tls protocols");
+		if (tls_config_set_protocols(config, protno) == -1)
+			errx(1, "tls_config_set_protocols: %s", tls_config_error(config));	
+	}
 
 	pki = l->pki[0];
 	if (pki == NULL)

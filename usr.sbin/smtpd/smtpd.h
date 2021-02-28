@@ -576,6 +576,7 @@ struct listener {
 
 	char	*tls_ciphers;
 	char	*tls_curves;
+	char	*tls_protocols;
 };
 
 struct smtpd {
@@ -653,6 +654,7 @@ struct smtpd {
 
 	char				       *sc_tls_ciphers;
 	char				       *sc_tls_curves;
+	char				       *sc_tls_protocols;
 
 	char				       *sc_subaddressing_delim;
 
