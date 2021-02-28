@@ -312,6 +312,26 @@ When used with a smarthost, the protocol must not be
 If
 .Cm no-verify
 is specified, do not require a valid certificate.
+.It Ic tls ciphers Ar control
+Set the
+.Ar control
+string for
+.Xr SSL_CTX_set_cipher_list 3 .
+The default is
+.Qq HIGH:!aNULL:!MD5 .
+.It Ic tls curves Ar control
+Set the
+.Ar control
+string for
+.Xr tls_config_set_ecdhecurves 3 .
+The default is
+.Qq secure .
+.It Ic tls protocols Ar control
+Set the
+.Ar control
+string for
+.Xr tls_config_set_protocols 3 .
+The default is to only use secure protocols.
 .It Cm auth Pf < Ar table Ns >
 Use the mapping
 .Ar table
@@ -462,20 +482,6 @@ use the CA certificate associated with
 .Ic ca
 directive)
 as the CA certificate when verifying client certificates.
-.It Ic ciphers Ar control
-Set the
-.Ar control
-string for
-.Xr SSL_CTX_set_cipher_list 3 .
-The default is
-.Qq HIGH:!aNULL:!MD5 .
-.It Ic curves Ar control
-Set the
-.Ar control
-string for
-.Xr tls_config_set_ecdhecurves 3 .
-The default is
-.Qq secure .
 .It Ic filter Ar name
 Apply filter
 .Ar name

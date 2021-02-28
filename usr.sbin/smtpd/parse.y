@@ -157,6 +157,7 @@ static struct listen_opts {
 
 	char		*tls_ciphers;
 	char		*tls_curves;
+	char		*tls_protocols;
 } listen_opts;
 
 static void	create_sock_listener(struct listen_opts *);
@@ -199,7 +200,7 @@ typedef struct {
 %token	MAIL_FROM MAILDIR MASK_SRC MASQUERADE MATCH MAX_MESSAGE_SIZE MAX_DEFERRED MBOX MDA MTA MX
 %token	NO_DSN NO_VERIFY NOOP
 %token	ON
-%token	PHASE PKI PORT PROC PROC_EXEC PROXY_V2
+%token	PHASE PKI PORT PROC PROC_EXEC PROTOCOLS PROXY_V2
 %token	QUEUE QUIT
 %token	RCPT_TO RDNS RECIPIENT RECEIVEDAUTH REGEX RELAY REJECT REPORT REWRITE RSET
 %token	SCHEDULER SENDER SENDERS SMTP SMTP_IN SMTP_OUT SMTPS SOCKET SRC SRS SUB_ADDR_DELIM
@@ -544,11 +545,14 @@ SCHEDULER LIMIT limits_scheduler
 
 smtp:
 SMTP LIMIT limits_smtp
-| SMTP CIPHERS STRING {
-	conf->sc_tls_ciphers = $3;
+| SMTP TLS CIPHERS STRING {
+	conf->sc_tls_ciphers = $4;
 }
-| SMTP CURVES STRING {
-	conf->sc_tls_curves = $3;
+| SMTP TLS CURVES STRING {
+	conf->sc_tls_curves = $4;
+}
+| SMTP TLS PROTOCOLS STRING {
+	conf->sc_tls_protocols = $4;
 }
 | SMTP MAX_MESSAGE_SIZE size {
 	conf->sc_maxsize = $3;
@@ -2125,6 +2129,37 @@ limits_scheduler: opt_limit_scheduler limits_scheduler
 		| /* empty */
 		;
 
+opt_listen_tls:
+PROTOCOLS STRING {
+	if (listen_opts.tls_protocols) {
+		yyerror("TLS protocols already set: %s", $2);
+		free($2);
+		YYERROR;
+	}
+	listen_opts.tls_protocols = $2;
+}
+| CIPHERS STRING {
+	if (listen_opts.tls_ciphers) {
+		yyerror("TLS ciphers already set: %s", $2);
+		free($2);
+		YYERROR;
+	}
+	listen_opts.tls_ciphers = $2;
+}
+| CURVES STRING {
+	if (listen_opts.tls_curves) {
+		yyerror("TLS curves already set: %s", $2);
+		free($2);
+		YYERROR;
+	}
+	listen_opts.tls_curves = $2;
+}
+;
+
+listen_tls:
+opt_listen_tls listen_tls
+| /* empty */
+;
 
 opt_sock_listen : FILTER STRING {
 			struct filter_config *fc;
@@ -2187,13 +2222,7 @@ opt_sock_listen : FILTER STRING {
 		;
 
 opt_if_listen :
-		CIPHERS STRING {
-			listen_opts.tls_ciphers = $2;
-		}
-		| CURVES STRING {
-			listen_opts.tls_curves = $2;
-		}
-		| INET4 {
+		INET4 {
 			if (listen_opts.options & LO_FAMILY) {
 				yyerror("address family already specified");
 				YYERROR;
@@ -2317,7 +2346,7 @@ opt_if_listen :
 			}
 			listen_opts.options |= LO_SSL;
 			listen_opts.ssl = F_SMTPS;
-		}
+		} listen_tls
 		| SMTPS VERIFY 			{
 			if (listen_opts.options & LO_SSL) {
 				yyerror("TLS mode already specified");
@@ -2325,7 +2354,7 @@ opt_if_listen :
 			}
 			listen_opts.options |= LO_SSL;
 			listen_opts.ssl = F_SMTPS|F_TLS_VERIFY;
-		}
+		} listen_tls
 		| TLS				{
 			if (listen_opts.options & LO_SSL) {
 				yyerror("TLS mode already specified");
@@ -2333,7 +2362,7 @@ opt_if_listen :
 			}
 			listen_opts.options |= LO_SSL;
 			listen_opts.ssl = F_STARTTLS;
-		}
+		} listen_tls
 		| TLS_REQUIRE			{
 			if (listen_opts.options & LO_SSL) {
 				yyerror("TLS mode already specified");
@@ -2341,7 +2370,7 @@ opt_if_listen :
 			}
 			listen_opts.options |= LO_SSL;
 			listen_opts.ssl = F_STARTTLS|F_STARTTLS_REQUIRE;
-		}
+		} listen_tls
 		| TLS_REQUIRE VERIFY   		{
 			if (listen_opts.options & LO_SSL) {
 				yyerror("TLS mode already specified");
@@ -2349,7 +2378,7 @@ opt_if_listen :
 			}
 			listen_opts.options |= LO_SSL;
 			listen_opts.ssl = F_STARTTLS|F_STARTTLS_REQUIRE|F_TLS_VERIFY;
-		}
+		} listen_tls
 		| PKI STRING			{
 			if (listen_opts.pkicount == PKI_MAX) {
 				yyerror("too many pki specified");
@@ -2722,6 +2751,7 @@ lookup(char *s)
 		{ "port",		PORT },
 		{ "proc",		PROC },
 		{ "proc-exec",		PROC_EXEC },
+		{ "protocols",	PROTOCOLS},
 		{ "proxy-v2",		PROXY_V2 },
 		{ "queue",		QUEUE },
 		{ "quit",		QUIT },
@@ -3273,6 +3303,8 @@ create_if_listener(struct listen_opts *lo)
 		errx(1, "invalid listen option: ciphers requires tls/smtps");
 	if (lo->tls_curves && !lo->ssl)
 		errx(1, "invalid listen option: curves requires tls/smtps");
+	if (lo->tls_protocols && !lo->ssl)
+		errx(1, "invalid listen option: protocols requires tls/smtps");
 
 	flags = lo->flags;
 
@@ -3372,6 +3404,8 @@ config_listener(struct listener *h,  struct listen_opts *lo)
 		h->tls_ciphers = lo->tls_ciphers;
 	if (lo->tls_curves)
 		h->tls_curves = lo->tls_curves;
+	if (lo->tls_protocols)
+		h->tls_protocols = lo->tls_protocols;
 
 	if (lo->socket_path)
 		(void)strlcpy(h->socket_path, lo->socket_path, sizeof(h->socket_path));
