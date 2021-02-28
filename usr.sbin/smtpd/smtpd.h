@@ -574,6 +574,7 @@ struct listener {
 	struct pki		**pki;
 	int			 pkicount;
 
+	char	*tls_ciphers;
 	char	*tls_curves;
 };
 

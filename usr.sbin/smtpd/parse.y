@@ -154,6 +154,8 @@ static struct listen_opts {
 	uint16_t	flags;
 
 	uint32_t       	options;
+
+	char		*tls_ciphers;
 	char		*tls_curves;
 } listen_opts;
 
@@ -2185,7 +2187,10 @@ opt_sock_listen : FILTER STRING {
 		;
 
 opt_if_listen :
-		CURVES STRING {
+		CIPHERS STRING {
+			listen_opts.tls_ciphers = $2;
+		}
+		| CURVES STRING {
 			listen_opts.tls_curves = $2;
 		}
 		| INET4 {
@@ -3264,6 +3269,8 @@ create_if_listener(struct listen_opts *lo)
 		errx(1, "invalid listen option: pki requires tls/smtps");
 	if (lo->pkicount == 0 && lo->ssl)
 		errx(1, "invalid listen option: pki required for tls/smtps");
+	if (lo->tls_ciphers && !lo->ssl)
+		errx(1, "invalid listen option: ciphers requires tls/smtps");
 	if (lo->tls_curves && !lo->ssl)
 		errx(1, "invalid listen option: curves requires tls/smtps");
 
@@ -3361,6 +3368,8 @@ config_listener(struct listener *h,  struct listen_opts *lo)
 	if (lo->ssl & F_STARTTLS_REQUIRE)
 		h->flags |= F_STARTTLS_REQUIRE;
 
+	if (lo->tls_ciphers)
+		h->tls_ciphers = lo->tls_ciphers;
 	if (lo->tls_curves)
 		h->tls_curves = lo->tls_curves;
 

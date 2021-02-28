@@ -234,21 +234,28 @@ smtp_setup_listener_tls(struct listener *l)
 	struct tls_config *config;
 	struct pki *pki;
 	struct ca *ca;
+	char *ciphers;
 	char *curves;
 	int i;
 
 	if ((config = tls_config_new()) == NULL)
 		fatal("smtpd: tls_config_new");
 
-	if (env->sc_tls_ciphers &&
-	    tls_config_set_ciphers(config, env->sc_tls_ciphers) == -1)
-			err(1, "%s", tls_config_error(config));
+	ciphers = NULL;
+	if (l->tls_ciphers)
+		ciphers = l->tls_ciphers;
+	else if (env->sc_tls_ciphers)
+		ciphers = env->sc_tls_ciphers;
 
 	curves = NULL;
 	if (l->tls_curves)
 		curves = l->tls_curves;
 	else if (env->sc_tls_curves)
 		curves = env->sc_tls_curves;
+
+	if (ciphers)
+		if (tls_config_set_ciphers(config, ciphers) == -1)
+			err(1, "%s", tls_config_error(config));
 
 	if (curves)
 		if (tls_config_set_ecdhecurves(config, curves) == -1)
