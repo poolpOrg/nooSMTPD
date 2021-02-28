@@ -573,6 +573,8 @@ struct listener {
 	struct tls		*tls;
 	struct pki		**pki;
 	int			 pkicount;
+
+	char	*tls_curves;
 };
 
 struct smtpd {

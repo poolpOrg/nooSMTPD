@@ -234,6 +234,7 @@ smtp_setup_listener_tls(struct listener *l)
 	struct tls_config *config;
 	struct pki *pki;
 	struct ca *ca;
+	char *curves;
 	int i;
 
 	if ((config = tls_config_new()) == NULL)
@@ -241,6 +242,14 @@ smtp_setup_listener_tls(struct listener *l)
 
 	if (env->sc_tls_ciphers &&
 	    tls_config_set_ciphers(config, env->sc_tls_ciphers) == -1)
+			err(1, "%s", tls_config_error(config));
+
+	curves = NULL;
+	if (l->tls_curves)
+		curves = l->tls_curves;
+
+	if (curves)
+		if (tls_config_set_ecdhecurves(config, curves) == -1)
 			err(1, "%s", tls_config_error(config));
 
 	pki = l->pki[0];
