@@ -1236,6 +1236,10 @@ struct dispatcher_remote {
 	char	*filtername;
 
 	int	 srs;
+
+	char	*tls_ciphers;
+	char	*tls_curves;
+	char	*tls_protocols;
 };
 
 struct dispatcher_bounce {
