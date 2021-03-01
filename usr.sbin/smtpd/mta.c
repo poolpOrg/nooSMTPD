@@ -494,6 +494,10 @@ mta_setup_dispatcher(struct dispatcher *dispatcher)
 	struct tls_config *config;
 	struct pki *pki;
 	struct ca *ca;
+	char *ciphers;
+	char *curves;
+	char *protocols;
+	uint32_t protno;
 
 	if (dispatcher->type != DISPATCHER_REMOTE)
 		return;
@@ -503,9 +507,37 @@ mta_setup_dispatcher(struct dispatcher *dispatcher)
 	if ((config = tls_config_new()) == NULL)
 		fatal("smtpd: tls_config_new");
 
-	if (env->sc_tls_ciphers) {
-		if (tls_config_set_ciphers(config, env->sc_tls_ciphers) == -1)
+	ciphers = NULL;
+	if (remote->tls_ciphers)
+		ciphers = remote->tls_ciphers;
+	else if (env->sc_tls_ciphers)
+		ciphers = env->sc_tls_ciphers;
+
+	curves = NULL;
+	if (remote->tls_curves)
+		curves = remote->tls_curves;
+	else if (env->sc_tls_curves)
+		curves = env->sc_tls_curves;
+
+	protocols = NULL;
+	if (remote->tls_protocols)
+		protocols = remote->tls_protocols;
+	else if (env->sc_tls_protocols)
+		protocols = env->sc_tls_protocols;
+
+	if (ciphers)
+		if (tls_config_set_ciphers(config, ciphers) == -1)
 			err(1, "%s", tls_config_error(config));
+
+	if (curves)
+		if (tls_config_set_ecdhecurves(config, curves) == -1)
+			err(1, "%s", tls_config_error(config));
+
+	if (protocols) {
+		if (tls_config_parse_protocols(&protno, protocols) == -1)
+			errx(1, "tls_config_parse_protocols: invalid tls protocols");
+		if (tls_config_set_protocols(config, protno) == -1)
+			errx(1, "tls_config_set_protocols: %s", tls_config_error(config));
 	}
 
 	if (remote->pki) {

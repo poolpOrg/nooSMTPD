@@ -753,8 +753,48 @@ MBOX {
 | EXPAND_ONLY {
 	dsp->u.local.expand_only = 1;
 } dispatcher_local_options
-
 ;
+
+opt_relay_tls:
+PROTOCOLS STRING {
+	if (dsp->u.remote.tls_protocols) {
+		yyerror("TLS protocols already set: %s", $2);
+		free($2);
+		YYERROR;
+	}
+	dsp->u.remote.tls_protocols = $2;
+}
+| CIPHERS STRING {
+	if (dsp->u.remote.tls_ciphers) {
+		yyerror("TLS ciphers already set: %s", $2);
+		free($2);
+		YYERROR;
+	}
+	dsp->u.remote.tls_ciphers = $2;
+}
+| CURVES STRING {
+	if (dsp->u.remote.tls_curves) {
+		yyerror("TLS curves already set: %s", $2);
+		free($2);
+		YYERROR;
+	}
+	dsp->u.remote.tls_curves = $2;
+}
+| NO_VERIFY {
+	if (dsp->u.remote.tls_noverify) {
+		yyerror("no-verify already specified for this dispatcher");
+		YYERROR;
+	}
+	dsp->u.remote.tls_noverify = 1;
+}
+;
+
+relay_tls:
+opt_relay_tls relay_tls
+| /* empty */
+;
+
+
 
 dispatcher_remote_option:
 HELO STRING {
@@ -893,16 +933,7 @@ HELO STRING {
 	}
 
 	dsp->u.remote.tls_required = 1;
-}
-| TLS NO_VERIFY {
-	if (dsp->u.remote.tls_required == 1) {
-		yyerror("tls already specified for this dispatcher");
-		YYERROR;
-	}
-
-	dsp->u.remote.tls_required = 1;
-	dsp->u.remote.tls_noverify = 1;
-}
+} relay_tls
 | AUTH tables {
 	struct table   *t = $2;
 
