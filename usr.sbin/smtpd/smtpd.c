@@ -1484,7 +1484,7 @@ forkmda(struct mproc *p, uint64_t id, struct deliver *deliver)
 		fatalx("non-local dispatcher called from forkmda()");
 
 	if (deliver->mda_exec[0] != '\0' &&
-		(!dsp->u.local.allow_expand_exec && !dsp->u.local.allow_expand_exec)) {
+		(!dsp->u.local.allow_expand_exec && !dsp->u.local.allow_forward_exec)) {
 		(void)snprintf(ebuf, sizeof ebuf,
 		    "custom MDA execution attempt on dispatcher without allow-exec");
 		m_create(p_dispatcher, IMSG_MDA_DONE, 0, 0, -1);
