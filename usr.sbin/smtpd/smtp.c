@@ -311,8 +311,6 @@ smtp_setup_listener_tls(struct listener *l)
 
 	if (l->flags & F_TLS_VERIFY)
 		tls_config_verify_client(config);
-	else
-		tls_config_verify_client_optional(config);
 
 	l->tls = tls_server();
 	if (l->tls == NULL)
